@@ -88,4 +88,4 @@ def test_load_problem(tmp_path: str, square: Problem[int]) -> None:
         dump(square, file)
 
     square_loaded: Problem[int] = load_problem(tmp_path, "problem.pckl")
-    square_loaded.run_golden_tests()  # pylint: disable=no-member
+    square_loaded.check()  # pylint: disable=no-member

@@ -88,7 +88,7 @@ def check(
     problem = _load_problem(problem_name)  # type: ignore
 
     try:
-        problem.run_golden_tests()
+        problem.check()
     except AssertionError as err:
         typer.echo(f"{problem.name()} failed some golden tests: {err}", err=True)
         raise typer.Exit(1) from err

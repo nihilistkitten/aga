@@ -6,9 +6,6 @@ from typing import TypeVar
 from ..loader import load_problem, load_symbol_from_dir
 from .runner import run_suite
 
-# we don't import the full path of JSONTestRunner because Black reformats it, which
-# stops the type ignore comment from working properly
-
 
 Output = TypeVar("Output")
 

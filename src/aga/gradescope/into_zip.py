@@ -53,14 +53,13 @@ def _get_zipfile_dest(path: Optional[str], problem: Problem[Output]) -> str:
         return path
 
 
-def _check_problem(problem: Problem[Output]) -> bool:
+def _check_problem(problem: Problem[Output]) -> None:
     """Check whether `problem` is valid.
 
     Currently, this just runs the golden tests for problem.
     """
     try:
-        problem.run_golden_tests()
-        return True
+        problem.check()
     except AssertionError as err:
         raise InvalidProblem from err
 
