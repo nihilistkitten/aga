@@ -10,23 +10,17 @@ repository = "https://github.com/nihilistkitten/aga"
 documentation = "https://aga.readthedocs.io"
 
 [tool.poetry.dependencies]
-backports-datetime-fromisoformat = "^1.0.0"
-dataclasses = {version = "^0.8.0", python = "~3.6"}
 dataclasses-json = "^0.5.6"
 dill = "^0.3.4"
 gradescope-utils = "^0.4.0"
-importlib-metadata = "^4.8.1"
-importlib-resources = "^5.2.2"
-python = "^3.6.2"
+python = "^3.10.0"
 typer = "^0.4.0"
-types-dataclasses = {version = "^0.1.7", python = "~3.6"}
 
 [tool.poetry.dev-dependencies]
-black = "^22.1.0"
+black = "^22.3.0"
 codecov = "^2.1.12"
 coverage = {extras = ["toml"], version = "^5.5"}
-docker = "^5.0.2"
-flake8 = "^3.9.2"
+flake8 = "^4.0.1"
 flake8-black = "^0.2.3"
 flake8-bugbear = "^21.9.1"
 mypy = "^0.910"
@@ -35,6 +29,7 @@ myst-parser = "^0.15.2"
 nox = "^2021.6.12"
 nox-poetry = "^0.8.6"
 pydocstyle = "^6.1.1"
+pylint = "^2.13.9"
 pyls-flake8 = "^0.4.0"
 pyls-isort = "^0.2.2"
 pytest = "^6.2.5"
@@ -42,12 +37,11 @@ pytest-cov = "^2.12.1"
 pytest-lazy-fixture = "^0.6.3"
 pytest-mock = "^3.6.1"
 python-lsp-black = "^1.0.0"
-python-lsp-server = {extras = ["mccabe", "pydocstyle", "flake8"], version = "^1.2.2"}
+python-lsp-server = {extras = ["mccabe", "pydocstyle", "flake8"], version = "^1.4.1"}
 sphinx = "^4.2.0"
 sphinx-autodoc-typehints = "^1.12.0"
 sphinx-click = "^3.0.1"
 sphinx-rtd-theme = "^1.0.0"
-types-backports = "^0.1.3"
 
 [tool.poetry.scripts]
 aga = "aga.cli:app"

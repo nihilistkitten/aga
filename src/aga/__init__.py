@@ -4,7 +4,7 @@ Anything not explicitly documented here should not be used directly by clients a
 only exposed for testing, the CLI, and type hinting.
 """
 
-from importlib_metadata import version
+from importlib.metadata import version
 
 from .core import problem, test_case
 

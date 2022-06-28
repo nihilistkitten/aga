@@ -93,7 +93,7 @@ class _ProblemUnpickler(Unpickler):  # type: ignore
     object in the some module it was pickled in, so it can then find the object's type
     and use that for instantiation. We want to be able to unpickle the object in any
     type, and we know that we always have a Problem pickled at `problem.pckl`, so we can
-    just assert that it's class should be Problem. This is _highly_ unsafe if we are
+    just assert that its class should be Problem. This is _highly_ unsafe if we are
     unsure of the safety of `problem.pckl`, but pickle/dill is not remotely safe anyway
     with untrusted data.
 

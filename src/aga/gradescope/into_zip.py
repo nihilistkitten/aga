@@ -3,16 +3,21 @@
 More complete documentation is in `__init__.py`.
 """
 
+from importlib.abc import Traversable
+from importlib.resources import files
+from os import makedirs
 from os.path import join as pathjoin
 from shutil import copyfileobj
 from tempfile import TemporaryDirectory
-from typing import Optional
+from typing import Iterable, Optional
 from zipfile import ZipFile
 
 from dill import dump  # type: ignore
-from importlib_resources import files
 
 from ..core import Output, Problem
+
+# don't zip resources because we handle them manually
+ZIP_IGNORES = ("__pycache__", "resources")
 
 
 class InvalidProblem(BaseException):
@@ -29,16 +34,19 @@ def into_gradescope_zip(problem: Problem[Output], path: Optional[str] = None) ->
 
     with TemporaryDirectory() as tempdir:
         with ZipFile(zip_name, "w") as zip_f:
-            path = _copy_resource_to(tempdir, "run_autograder")
+            for (src_path, resource_name) in _copy_package_to(tempdir, files("aga")):
+                zip_f.write(src_path, arcname=resource_name)
+
+            path = _manual_copy_resource_to(tempdir, "run_autograder")
             zip_f.write(path, arcname="run_autograder")
 
-            path = _copy_resource_to(tempdir, "setup.sh")
+            path = _manual_copy_resource_to(tempdir, "setup.sh")
             zip_f.write(path, arcname="setup.sh")
 
             path = _dump_problem_into_dir(problem, tempdir)
             zip_f.write(path, arcname="problem.pckl")
 
-        return zip_name
+    return zip_name
 
 
 def _get_zipfile_dest(path: Optional[str], problem: Problem[Output]) -> str:
@@ -65,16 +73,48 @@ def _check_problem(problem: Problem[Output]) -> bool:
         raise InvalidProblem from err
 
 
+def _copy_package_to(
+    tempdir: str, package: Traversable, prefix: str = "aga"
+) -> Iterable[tuple[str, str]]:
+    """Recusrively copy each resource, yielding the file path and resource name."""
+    # can we use `copytree` from shutil for this? or maybe `inspect.getsource`?
+
+    makedirs(pathjoin(tempdir, prefix), exist_ok=True)
+    # manually traverse the package structure, copying source files as we go
+    for resource in package.iterdir():
+        if resource.name not in ZIP_IGNORES:
+            if resource.is_dir():
+                yield from _copy_package_to(
+                    tempdir,
+                    resource,
+                    pathjoin(prefix, resource.name),
+                )
+            else:
+                yield _copy_resource_to(tempdir, resource, prefix)
+
+
 def _copy_resource_to(
+    tempdir: str, resource: Traversable, prefix: str
+) -> tuple[str, str]:
+    """Copy the resource to tempdir, yielding the file path and resource name."""
+    dest_path = pathjoin(tempdir, prefix, resource.name)
+    with resource.open() as src:  # type: ignore
+        with open(dest_path, "w", encoding="UTF-8") as dest:
+            copyfileobj(src, dest)
+
+    return (dest_path, pathjoin(prefix, resource.name))
+
+
+def _manual_copy_resource_to(
     tempdir: str, fname: str, package: str = "aga.gradescope.resources"
 ) -> str:
     """Copy the resource at package.fname to tempdir/fname, returning the dest path."""
-    path = pathjoin(tempdir, fname)
+    dest_path = pathjoin(tempdir, fname)
     with files(package).joinpath(fname).open() as src:  # type: ignore
-        with open(path, "w", encoding="UTF-8") as dest:
+        with open(dest_path, "w", encoding="UTF-8") as dest:
             copyfileobj(src, dest)
 
-    return path
+    return dest_path
 
 
 def _dump_problem_into_dir(

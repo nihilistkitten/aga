@@ -5,6 +5,8 @@
 
 import json
 import os
+from importlib.resources import files
+from inspect import getmembers, getsource, ismodule
 from io import TextIOWrapper
 from os.path import dirname
 from os.path import join as pathjoin
@@ -14,9 +16,9 @@ from zipfile import ZipFile
 
 import pytest
 from dill import load  # type: ignore
-from importlib_resources import files
 from pytest_mock import MockerFixture
 
+import aga  # for source inspection
 from aga.core import Problem
 from aga.gradescope import InvalidProblem, into_gradescope_zip
 from aga.gradescope.main import gradescope_main
@@ -48,6 +50,23 @@ def test_into_gradescope_zip_path(gradescope_zip: Tuple[Problem[Output], str]) -
     orig_problem, zip_path = gradescope_zip
 
     assert zip_path == f"{orig_problem.name()}.zip"
+
+
+def test_into_gradescope_zip_source(
+    gradescope_zip: Tuple[Problem[Output], str]
+) -> None:
+    """Test that into_gradescope_zip archives the library source correctly."""
+
+    _, zip_path = gradescope_zip
+    with ZipFile(zip_path) as zip_f:
+        for (name, module) in getmembers(aga, ismodule):
+            # don't check gradescope because it's a subdirectory and I'm too lazy to
+            # write special handling or recursion right now
+            if name != "gradescope":
+                with zip_f.open(pathjoin("aga", name + ".py")) as src:
+                    unzipped_core_source = src.read()
+                    core_source = bytes(getsource(module), "UTF-8")
+                    assert unzipped_core_source == core_source
 
 
 def test_into_gradescope_zip_problem(
@@ -86,7 +105,7 @@ def test_into_gradescope_zip_custom_path(valid_problem: Problem[Output]) -> None
         zip_path = into_gradescope_zip(valid_problem, "archive.zip")
         assert zip_path == "archive.zip"
     finally:
-        os.remove(zip_path)
+        os.remove("archive.zip")
 
 
 def test_into_gradescope_zip_incorrect_problem(diff_bad_impl: Problem[int]) -> None:
